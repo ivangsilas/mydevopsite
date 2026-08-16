@@ -1,0 +1,43 @@
+name: Build and Deploy Site
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  # JOB 1: the "CI" part - check the site before shipping it
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Grab my code
+        uses: actions/checkout@v4
+
+      - name: Check HTML is valid
+        uses: Cyb3r-Jak3/html5validator-action@v7.2.0
+        with:
+          root: .
+
+  # JOB 2: the "CD" part - only runs if "check" succeeds
+  deploy:
+    needs: check
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Grab my code
+        uses: actions/checkout@v4
+
+      - name: Prepare the pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
