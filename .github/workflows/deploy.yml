@@ -3,6 +3,8 @@ name: Build and Deploy Site
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
@@ -25,6 +27,7 @@ jobs:
   # JOB 2: the "CD" part - only runs if "check" succeeds
   deploy:
     needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
