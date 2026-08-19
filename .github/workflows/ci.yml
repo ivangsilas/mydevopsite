@@ -23,3 +23,24 @@ jobs:
 
       - name: Run tests
         run: pytest
+
+    deploy:
+      needs: test
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      runs-on: ubuntu-latest
+      steps:
+        - name: Grab my code
+          uses: actions/checkout@v4
+
+        - name: Configure AWS credentials
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ secrets.AWS_REGION }}
+
+        - name: Zip the code
+          run: zip function.zip calculator.py
+
+        - name: Deploy to Lambda
+          run: aws lambda update-function-code --function-name calculator-function --zip-file fileb://function.zip
